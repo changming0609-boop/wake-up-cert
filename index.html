@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wake Up 结营证书</title>
+    <style>
+        /* =========================================
+           全新视觉系统：Owen Gent 艺术调色盘
+           ========================================= */
+        :root {
+            --theme-red: #e06c48; /* 日落余晖色：替换原珊瑚红，更柔和包容 */
+            --theme-sand: #d1c7b7; /* 暖沙色：用于次级信息与装饰 */
+            --theme-navy: #0a0d14; /* 极夜深蓝：用于弹窗与卡片底色 */
+            --text-main: #f2efe9; /* 灵魂白：主文字色 */
+            --text-muted: #8b92a5; /* 冷灰蓝：弱化信息色 */
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0; padding: 0;
+            background-color: var(--theme-navy);
+            color: var(--text-main);
+            font-family: "PingFang SC", "Helvetica Neue", sans-serif;
+            min-height: 100vh; overflow-x: hidden;
+        }
+
+        /* 动态背景层与遮罩层 */
+        #bg-layer {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-size: cover; background-position: center;
+            background-image: url('./bg-1.jpg'); /* 默认第一张图 */
+            z-index: -2;
+            transition: background-image 1.2s ease-in-out;
+        }
+        #bg-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            /* 拿掉深色黑罩，改为极轻微的暗场保护，释放原图全部细节 */
+            background: rgba(10, 13, 20, 0.15);
+            z-index: -1;
+        }
+
+        .hidden { display: none !important; }
+
+        /* =========================================
+           模块 1：深潜旅程页 (自适应滚动排版)
+           ========================================= */
+        #journey-view {
+            width: 100%; min-height: 100vh;
+            display: flex; justify-content: center;
+        }
+
+        .step-container {
+            width: 90%; max-width: 480px;
+            display: none; flex-direction: column;
+            padding: 4rem 0 6rem 0; opacity: 0;     
+        }
+
+        .step-container.active {
+            display: flex; animation: fadeIn 1s forwards;
+            pointer-events: auto; z-index: 10;
+        }
+
+        /* 第一页专属样式 (保留白字与暗影) */
+        .intro-brand { font-size: 1.2rem; font-weight: 300; letter-spacing: 6px; color: var(--text-main); margin-bottom: 10px; text-align: center; text-shadow: 0 2px 8px rgba(0,0,0,0.85); }
+       .intro-title { 
+            font-size: 1.8rem; font-weight: 400; letter-spacing: 6px; color: var(--text-main); margin: 0 0 1rem 0; 
+            text-shadow: 0 1px 2px rgba(0,0,0,0.9), 0 4px 12px rgba(0,0,0,0.8), 0 0 30px rgba(0,0,0,0.7);
+            text-align: center; 
+        }
+        .intro-indicator { 
+            font-size: 0.8rem; color: var(--theme-sand); letter-spacing: 4px; border: 1px solid rgba(209, 199, 183, 0.3); 
+            padding: 6px 12px; display: inline-block; border-radius: 4px; background: rgba(0,0,0,0.2); margin: 0 auto 3rem auto; text-align: center;
+        }
+
+        /* 深潜文字样式 (保留白字与暗影) */
+      .text-line {
+            font-size: 1.1rem; line-height: 2.2; color: var(--text-main); font-weight: 400; letter-spacing: 2px;
+            opacity: 0; transform: translateY(20px); text-align: center;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.9), 0 4px 12px rgba(0,0,0,0.8), 0 0 30px rgba(0,0,0,0.7); 
+        }
+        .step-container.active .text-line { animation: fadeInUp 1s forwards; }
+
+        .d-1 { animation-delay: 0.5s !important; }
+        .d-2 { animation-delay: 1.5s !important; }
+        .d-3 { animation-delay: 2.5s !important; }
+        .d-4 { animation-delay: 3.5s !important; }
+        .d-5 { animation-delay: 4.5s !important; }
+        .d-6 { animation-delay: 5.5s !important; }
+
+        /* 内容页样式 */
+       .chapter-title {
+            font-size: 1.4rem; color: var(--theme-red); margin-bottom: 2rem; font-weight: 500; letter-spacing: 4px; 
+            text-shadow: 0 1px 2px rgba(0,0,0,0.9), 0 4px 12px rgba(0,0,0,0.8), 0 0 30px rgba(0,0,0,0.6); 
+            text-align: center; opacity: 0; transform: translateY(20px);
+        }
+        .step-container.active .chapter-title { animation: fadeInUp 1s 0.2s forwards; }
+
+        /* 同行者印记模块 (冰晶化处理 + 文字反深) */
+        .echo-section { margin-top: 3rem; opacity: 0; }
+        .step-container.active .echo-section { animation: fadeIn 1s 5s forwards; } 
+        
+        .echo-title { font-size: 0.8rem; color: var(--theme-sand); letter-spacing: 4px; margin-bottom: 1.5rem; font-weight: 600; text-align: center; opacity: 0.8; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
+        
+        .echo-bubble {
+            background: rgba(242, 239, 233, 0.60); /* 冰晶亮色底 */
+            border-left: 2px solid var(--theme-red); border-radius: 0 12px 12px 0; padding: 1rem 1.2rem; margin-bottom: 1rem;
+            text-align: left; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.25); border-left: 2px solid var(--theme-red);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.15); /* 玻璃浮雕阴影 */
+            opacity: 0; transform: translateX(-20px);
+        }
+        .step-container.active .echo-bubble:nth-child(2) { animation: slideInRight 0.8s 5.5s forwards; }
+        .step-container.active .echo-bubble:nth-child(3) { animation: slideInRight 0.8s 6.2s forwards; }
+        .step-container.active .echo-bubble:nth-child(4) { animation: slideInRight 0.8s 6.9s forwards; }
+
+        .echo-author { font-size: 0.75rem; color: var(--theme-navy); margin-bottom: 4px; letter-spacing: 1px; font-weight: 600; text-shadow: none; }
+        .echo-text { font-size: 0.85rem; color: #1a202c; line-height: 1.6; letter-spacing: 1px; font-weight: 400; text-shadow: none; opacity: 0.95; }
+
+        /* 呼吸向下箭头 */
+        .scroll-arrow {
+            text-align: center; font-size: 2.8rem; color: var(--theme-red); 
+            text-shadow: 0 0 15px rgba(224, 108, 72, 0.6);
+            margin-top: 4rem; cursor: pointer; padding: 20px; opacity: 0; pointer-events: none;
+        }
+        .step-container.active .scroll-arrow { animation: fadeInPulse 2s 4s infinite forwards; pointer-events: auto; }
+        .step-container.active .delay-arrow { animation: fadeInPulse 2s 8s infinite forwards; pointer-events: auto; }
+
+        /* =========================================
+           模块 2 & 3：生成器与证书页
+           ========================================= */
+        .app-container {
+            width: 90%; max-width: 480px; margin: 0 auto; text-align: center;
+            padding: 2rem 0; opacity: 0; transform: translateY(20px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        .app-container.visible { opacity: 1; transform: translateY(0); }
+
+        /* 输入页 (保留白字主视觉) */
+        .brand-header { margin-bottom: 4rem; margin-top: 2rem; }
+        .brand-header h1 { font-size: 1.6rem; font-weight: 300; letter-spacing: 6px; margin-bottom: 0.5rem; color: var(--text-main); text-shadow: 0 2px 10px rgba(0,0,0,0.8), 0 0 15px rgba(242, 239, 233, 0.3); }
+        .brand-header p { font-size: 0.75rem; letter-spacing: 4px; color: var(--theme-sand); margin: 0; font-weight: 600; opacity: 0.8; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
+
+        .recap-section { margin-bottom: 4rem; }
+        .recap-keywords { font-size: 1.1rem; font-weight: 300; letter-spacing: 6px; color: var(--theme-red); margin-bottom: 1.5rem; text-shadow: 0 2px 8px rgba(0,0,0,0.8); white-space: nowrap; }
+        .recap-line { font-size: 0.95rem; line-height: 2.2; color: var(--text-main); letter-spacing: 2px; font-weight: 300; text-shadow: 0 2px 8px rgba(0,0,0,0.8); }
+
+        .input-group { margin-bottom: 2.5rem; text-align: center; }
+        .input-label { display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem; letter-spacing: 2px; }
+        .input-wrapper { position: relative; width: 100%; display: block; }
+        
+        /* 冰晶化防抖输入框 */
+        .input-field { 
+            background: rgba(242, 239, 233, 0.25); border: 1px solid rgba(255, 255, 255, 0.35); 
+            border-radius: 12px; padding: 1.2rem; width: 100%; color: var(--theme-navy); font-weight: 500;
+            font-size: 1rem; text-align: center; outline: none; transition: 0.3s; 
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            -webkit-appearance: none; line-height: normal; margin: 0; box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        .input-field:focus { border-color: var(--theme-red); background: rgba(242, 239, 233, 0.45); box-shadow: 0 0 20px rgba(224, 108, 72, 0.2); }
+        .input-field::placeholder { color: rgba(10, 13, 20, 0.5); font-weight: 400; }
+        
+        #quote-input { padding-left: 6.5rem; text-align: left; }
+        .prefix-text { position: absolute; left: 24px; top: 50%; transform: translateY(-50%); color: var(--theme-red); font-size: 1rem; font-weight: 500; pointer-events: none; z-index: 100; text-shadow: 0 0 8px rgba(255, 255, 255, 0.5); }
+
+        .btn-generate { 
+            background: linear-gradient(90deg, #c05838, var(--theme-red)); color: #fff; font-weight: 400; border: none;
+            border-radius: 50px; padding: 1.2rem 4rem; font-size: 1rem; letter-spacing: 4px; cursor: pointer; width: 100%; transition: 0.4s;
+            box-shadow: 0 10px 30px rgba(224, 108, 72, 0.3); margin-bottom: 2rem; margin-top: 2rem;
+        }
+        .btn-generate:hover { transform: scale(1.02); box-shadow: 0 10px 40px rgba(224, 108, 72, 0.5); }
+
+        /* 冰晶化证书卡片页 */
+        #cert-card { 
+            background: rgba(242, 239, 233, 0.3); border: 1px solid rgba(255, 255, 255, 0.4); 
+            border-radius: 24px; padding: 4.5rem 2.5rem; aspect-ratio: 3 / 4.5; display: flex; flex-direction: column;
+            position: relative; overflow: hidden; box-shadow: 0 30px 80px rgba(0,0,0,0.5); 
+            backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); margin-top: 2rem;
+        }
+        #cert-card::before { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: linear-gradient(90deg, transparent, var(--theme-red), transparent); box-shadow: 0 0 15px var(--theme-red); z-index: 5; }
+
+        .cert-content-wrapper { position: relative; z-index: 2; display: flex; flex-direction: column; justify-content: space-between; height: 100%; }
+
+        /* html2canvas 专属底层图 */
+        #capture-bg { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; border-radius: 24px; }
+        /* 截图专属遮罩：在按下快门瞬间，垫入不透明的沙白色底板，保证深色文字绝对清晰 */
+        #capture-mask { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(242, 239, 233, 0.92); z-index: 1; border-radius: 24px; }
+
+        /* 卡片内部文字反色：全部转为深邃系 */
+        .cert-header { text-align: center; }
+        .cert-header .program { font-size: 0.9rem; font-weight: 500; letter-spacing: 6px; color: var(--theme-navy); margin-bottom: 6px; text-shadow: none; }
+        .cert-header .en { font-size: 0.6rem; color: rgba(10, 13, 20, 0.6); letter-spacing: 4px; margin-bottom: 8px; font-weight: 700; opacity: 1; }
+        .cert-header .cn { font-size: 1.5rem; font-weight: 400; letter-spacing: 10px; margin-bottom: 2rem; color: var(--theme-navy); }
+        .cert-id { font-size: 0.8rem; color: var(--theme-navy); font-weight: 600; font-family: monospace; border: 1px solid rgba(10, 13, 20, 0.15); padding: 4px 12px; border-radius: 4px; display: inline-block; background: rgba(255, 255, 255, 0.4);}
+
+        .cert-body { margin: auto 0; }
+        .cert-quote { font-size: 1.8rem; font-weight: 400; line-height: 1.6; color: var(--theme-navy); text-shadow: none; margin-bottom: 2rem; letter-spacing: 1px; }
+        .cert-desc { font-size: 0.85rem; color: rgba(10, 13, 20, 0.75); line-height: 2; letter-spacing: 1px; text-shadow: none; font-weight: 400; }
+
+        /* 证书底部排版 (深色分割线) */
+       /* 证书底部排版：划定绝对的宽度比例，强制底部基准线对齐 */
+        .cert-footer { border-top: 1px solid rgba(10, 13, 20, 0.15); padding-top: 2rem; display: flex; justify-content: space-between; align-items: flex-end; width: 100%; }
+        .footer-egg { text-align: left; width: 60%; display: block; }
+        .footer-egg-title { font-size: 0.6rem; color: rgba(10, 13, 20, 0.6); letter-spacing: 1px; margin-bottom: 6px; font-weight: 600; line-height: 1; }
+        .footer-egg-key { color: var(--theme-red); font-family: monospace; font-size: 0.75rem; word-break: break-all; line-height: 1.4; margin: 0; }
+        
+        .footer-brand { text-align: right; width: 35%; display: block; }
+        .brand-logo { font-size: 1.1rem; font-weight: 400; letter-spacing: 3px; margin-bottom: 6px; color: var(--theme-navy); line-height: 1; }
+        .date-label { font-size: 0.65rem; color: rgba(10, 13, 20, 0.6); font-weight: 500; font-family: monospace; letter-spacing: 1px; line-height: 1; margin: 0; }
+
+        .btn-save { margin-top: 2rem; background: var(--text-main); color: var(--theme-navy); border: none; box-shadow: 0 4px 20px rgba(242,239,233,0.2); }
+        .btn-restart { background: rgba(242, 239, 233, 0.25) !important; border: 1px solid rgba(255,255,255,0.4) !important; color: var(--text-main) !important; margin-top: 0; margin-bottom: 3rem; box-shadow: 0 4px 15px rgba(0,0,0,0.2) !important; backdrop-filter: blur(8px); }
+
+        /* =========================================
+           长按保存与分享弹窗 (保留深色)
+           ========================================= */
+        #save-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(10, 13, 20, 0.95); z-index: 999;
+            display: flex; justify-content: center; align-items: center;
+            opacity: 0; transition: opacity 0.4s; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+        }
+        #save-modal.show { opacity: 1; }
+        .modal-content { text-align: center; width: 85%; max-width: 400px; position: relative; }
+        .modal-title { color: var(--theme-red); font-size: 1.2rem; margin-bottom: 8px; letter-spacing: 2px; font-weight: 400; text-shadow: 0 0 10px rgba(224, 108, 72, 0.4); }
+        .modal-tip { color: var(--text-main); font-size: 0.85rem; line-height: 1.8; margin-bottom: 25px; letter-spacing: 1px; opacity: 0.9; }
+        #final-image { width: 100%; border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); }
+        .modal-close { position: absolute; top: -50px; right: 0; color: rgba(242,239,233,0.5); font-size: 2.5rem; cursor: pointer; line-height: 1; padding: 10px; font-weight: 300; }
+
+        /* 全平台兼容动画 */
+        @keyframes fadeInUp { 0% { opacity: 0; transform: translateY(20px); } 100% { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { 0% { opacity: 0; } 100% { opacity: 1; } }
+        @keyframes slideInRight { 0% { opacity: 0; transform: translateX(-20px); } 100% { opacity: 1; transform: translateX(0); } }
+        @keyframes fadeInPulse { 0% { opacity: 0; transform: translateY(-15px); } 50% { opacity: 1; transform: translateY(0); text-shadow: 0 0 25px rgba(224, 108, 72, 0.8); } 100% { opacity: 0.4; transform: translateY(8px); text-shadow: 0 0 10px rgba(224, 108, 72, 0.2); } }
+    </style>
+</head>
+<body>
+    
+    <div id="bg-layer"></div>
+    <div id="bg-overlay"></div>
+
+    <div id="journey-view">
+        <div class="step-container active" id="step-1">
+            <div style="display:flex; flex-direction:column; align-items:center; width:100%;">
+                <div class="intro-brand text-line d-1">MindCode</div>
+                <div class="intro-title text-line d-2">Wake Up · 唤醒你的心</div>
+                <div class="intro-indicator text-line d-3">[ 旅程回溯 ]</div>
+                <div class="text-line d-4" style="margin-top: 2rem;">我们照见模式，</div>
+                <div class="text-line d-5">探究根源，</div>
+                <div class="text-line d-6">解开束缚，</div>
+                <div class="text-line d-6" style="animation-delay: 6.5s !important;">重新唤醒。</div>
+                <div class="scroll-arrow" onclick="nextStep(2)">⌄</div>
+            </div>
+        </div>
+
+        <div class="step-container" id="step-2">
+            <div class="chapter-title">【镜子】</div>
+            <div class="text-line d-1">我们照了镜子，</div>
+            <div class="text-line d-2">才真正看到，</div>
+            <div class="text-line d-3">我们以为的自己，</div>
+            <div class="text-line d-4">跟实际运作的自己不一样。</div>
+            <div class="echo-section">
+                <div class="echo-title">[ 同行者印记 ]</div>
+                <div class="echo-bubble"><div class="echo-author">曾雨悦</div><div class="echo-text">从一个更慈悲、更整体的角度看见并接纳了自己，真好啊~~~感谢。</div></div>
+                <div class="echo-bubble"><div class="echo-author">L</div><div class="echo-text">借助 AI 的能力照镜子，看见“看见”的价值。</div></div>
+                <div class="echo-bubble"><div class="echo-author">Dracon</div><div class="echo-text">理解并接纳自己的预期与状态之间的 gap，在这个 gap 上构建坡道，让它不再是遥远的彼岸。</div></div>
+            </div>
+            <div class="scroll-arrow delay-arrow" onclick="nextStep(3)">⌄</div>
+        </div>
+
+        <div class="step-container" id="step-3">
+            <div class="chapter-title">【剧本】</div>
+            <div class="text-line d-1">我们发现，</div>
+            <div class="text-line d-2">某些机制在生命中不断上演。</div>
+            <div class="text-line d-3">那是在很早就写好的剧本，</div>
+            <div class="text-line d-4">它是无意识的，它是自我强化的，</div>
+            <div class="text-line d-5">以至于最终它几乎注定实现。</div>
+            <div class="echo-section">
+                <div class="echo-title">[ 同行者印记 ]</div>
+                <div class="echo-bubble"><div class="echo-author">Teigen</div><div class="echo-text">AI 能够将一些看似无关的小事连接起来，指出背后共同的行为模式，太有意思了。</div></div>
+                <div class="echo-bubble"><div class="echo-author">Ruby</div><div class="echo-text">有了 AI 的辅助，可以对自己的人生剧本看得更清楚，感谢大家真诚分享。</div></div>
+                <div class="echo-bubble"><div class="echo-author">大强</div><div class="echo-text">看了很多遍 AI 给我的回复，戳中内心最软的地方，有种被疗愈被安抚的感受。</div></div>
+            </div>
+            <div class="scroll-arrow delay-arrow" onclick="nextStep(4)">⌄</div>
+        </div>
+
+        <div class="step-container" id="step-4">
+            <div class="chapter-title">【驯化】</div>
+            <div class="text-line d-1">我们终于明白，</div>
+            <div class="text-line d-2">那个剧本不完全是我们自己写的。</div>
+            <div class="text-line d-3">它来自于某个人的一个眼神、</div>
+            <div class="text-line d-4">一声宽慰或一句否定。</div>
+            <div class="text-line d-5">它伪装成我自己的声音，</div>
+            <div class="text-line d-6">但那不是我的声音。</div>
+            <div class="echo-section" style="animation-delay: 6s;">
+                <div class="echo-title">[ 同行者印记 ]</div>
+                <div class="echo-bubble" style="animation-delay: 6.5s;"><div class="echo-author">William.Z</div><div class="echo-text">你可以沉浸在自己的世界，不回应他人的期待，你不会因此而不安全，也不会被抛弃。</div></div>
+                <div class="echo-bubble" style="animation-delay: 7.2s;"><div class="echo-author">清枫々榄月</div><div class="echo-text">欲望和愤怒，其实是我们最珍贵的生命力。</div></div>
+                <div class="echo-bubble" style="animation-delay: 7.9s;"><div class="echo-author">多睡会</div><div class="echo-text">声音不一定都是自己的，认真分辨和倾听才会找到纯粹的心声。</div></div>
+            </div>
+            <div class="scroll-arrow delay-arrow" style="animation-delay: 9s;" onclick="nextStep(5)">⌄</div>
+        </div>
+
+        <div class="step-container" id="step-5">
+            <div class="chapter-title">【允许】</div>
+            <div class="text-line d-1">我们完成了最后一步，</div>
+            <div class="text-line d-2">把收起来的东西重新拿出来。</div>
+            <div class="text-line d-3">那不是“也许可以”，</div>
+            <div class="text-line d-4">而是“我允许我自己”，</div>
+            <div class="text-line d-5">并且是“我总是允许我自己”。</div>
+            <div class="echo-section">
+                <div class="echo-title">[ 同行者印记 ]</div>
+                <div class="echo-bubble"><div class="echo-author">月</div><div class="echo-text">四周旅程，大哭过也被治愈过。多次电击般触动，第一次停下来探究自己。</div></div>
+                <div class="echo-bubble"><div class="echo-author">素小秦</div><div class="echo-text">感谢构建的安全场域，精心设计的台阶和坡道。这段旅程悠扬，且有力量。</div></div>
+                <div class="echo-bubble"><div class="echo-author">李彦廷</div><div class="echo-text">借助与 AI 的对话，找到自己深层的需求，去允许，去看见。</div></div>
+            </div>
+            <button class="btn-generate text-line delay-arrow" style="animation-delay: 9s; opacity:0; margin-top:3rem;" onclick="goToInput()">[ >> 接入我的认知凭证 ]</button>
+        </div>
+    </div>
+
+    <div id="input-view" class="app-container hidden">
+        <div class="brand-header">
+            <h1>Wake Up · 唤醒你的心</h1>
+            <p>CERTIFICATE OF COMPLETION</p>
+        </div>
+        <div class="recap-section">
+            <div class="recap-keywords">镜子。剧本。驯化。允许。</div>
+            <div class="recap-line" style="margin-top: 1rem;">旧剧本已刷新，</div>
+            <div class="recap-line">新的认知系统已就绪。</div>
+        </div>
+        <div class="input-group">
+            <input type="text" id="name-input" class="input-field" placeholder="填入你的姓名" autocomplete="off">
+        </div>
+        <div class="input-group">
+            <span class="input-label">填入你的专属咒语</span>
+            <div class="input-wrapper">
+                <span class="prefix-text">我允许</span>
+                <input type="text" id="quote-input" class="input-field" placeholder="..." autocomplete="off">
+            </div>
+        </div>
+        <button class="btn-generate" onclick="doGenerate()">生成确认凭证</button>
+    </div>
+
+    <div id="output-view" class="app-container hidden">
+        <div id="cert-card">
+            <img id="capture-bg" src="./bg-7.jpg" alt="" crossorigin="anonymous">
+            <div id="capture-mask"></div>
+
+            <div class="cert-content-wrapper">
+                <div class="cert-header">
+                    <div class="program">Wake Up 训练营</div>
+                    <div class="en">CERTIFICATE OF COMPLETION</div>
+                    <div class="cn">结营证书</div>
+                    <div class="cert-id" id="disp-name">ID: UNKNOWN</div>
+                </div>
+                <div class="cert-body">
+                    <div class="cert-quote" id="disp-quote">「 我允许... 」</div>
+                    <div class="cert-desc">旧剧本已刷新，<br>新的认知系统已正式激活。</div>
+                </div>
+                <div class="cert-footer">
+                    <div class="footer-egg">
+                        <div class="footer-egg-title">[隐藏彩蛋·宝库密码]</div>
+                        <div class="footer-egg-key">MindCodeWakeUP!62Y3P7mRxy</div>
+                    </div>
+                    <div class="footer-brand">
+                        <div class="brand-logo">MindCode</div>
+                        <div class="date-label" id="disp-date">2026.04.19</div>
+                    </div>
+                </div>
+            </div> 
+        </div>
+        <button class="btn-generate btn-save" onclick="doSave()">保存证书图片</button>
+        <button class="btn-generate btn-restart" onclick="location.reload()">重新录入</button>
+    </div>
+
+    <div id="save-modal" class="hidden">
+        <div class="modal-content">
+            <div class="modal-close" onclick="closeModal()">×</div>
+            <div class="modal-title">认知凭证已激活</div>
+            <div class="modal-tip">请长按下方图片保存<br>欢迎展示在朋友圈，或发送给同行者</div>
+            <img id="final-image" src="" alt="Wake Up 结营证书">
+        </div>
+    </div>
+
+    <script src="https://cdn.staticfile.net/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script>
+        // --- 背景切换中枢 ---
+        function changeBackground(num) {
+            document.getElementById('bg-layer').style.backgroundImage = `url('./bg-${num}.jpg')`;
+        }
+
+        // --- 核心逻辑 1：深潜步进控制 ---
+        function nextStep(stepNum) {
+            document.querySelectorAll('.step-container').forEach(el => {
+                el.classList.remove('active');
+            });
+            changeBackground(stepNum); // 同步切换背景图 2-5
+            setTimeout(() => {
+                const nextEl = document.getElementById('step-' + stepNum);
+                if(nextEl) nextEl.classList.add('active');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 300);
+        }
+
+        // --- 核心逻辑 2：进入输入页 ---
+        function goToInput() {
+            const jView = document.getElementById('journey-view');
+            const iView = document.getElementById('input-view');
+            
+            jView.style.opacity = '0';
+            changeBackground(6); // 切换到第 6 张背景图
+            setTimeout(() => {
+                jView.classList.add('hidden');
+                iView.classList.remove('hidden');
+                void iView.offsetWidth;
+                iView.classList.add('visible');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 800);
+        }
+
+        // --- 核心逻辑 3：生成证书 ---
+        function doGenerate() {
+            const name = document.getElementById('name-input').value.trim();
+            const quote = document.getElementById('quote-input').value.trim();
+            if(!name || !quote) return alert('请完整填写姓名和咒语');
+
+            document.getElementById('disp-name').innerText = `ID: ${name}`;
+            document.getElementById('disp-quote').innerText = `「 我允许${quote} 」`;
+            const now = new Date();
+            document.getElementById('disp-date').innerText = now.getFullYear() + '.' + String(now.getMonth()+1).padStart(2,'0') + '.' + String(now.getDate()).padStart(2,'0');
+            
+            const iView = document.getElementById('input-view');
+            const oView = document.getElementById('output-view');
+            
+            iView.classList.remove('visible');
+            changeBackground(7); // 网页底层切换到第 7 张背景图
+            document.getElementById('capture-bg').src = './bg-7.jpg';
+            // 确保证书截图底层也是第 7 张图
+
+            setTimeout(() => {
+                iView.classList.add('hidden');
+                oView.classList.remove('hidden');
+                void oView.offsetWidth;
+                oView.classList.add('visible');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 800);
+        }
+
+        // --- 核心逻辑 4：防崩保存机制 ---
+        function doSave() {
+            if (typeof html2canvas === 'undefined') {
+                alert('系统仍在加载深层组件，请稍等一秒再尝试...');
+                return;
+            }
+            
+            const card = document.getElementById('cert-card');
+            const captureBg = document.getElementById('capture-bg');
+            const captureMask = document.getElementById('capture-mask');
+            
+            const origBg = card.style.background;
+            const origFilter = card.style.backdropFilter;
+            const origWebkitFilter = card.style.webkitBackdropFilter;
+            card.style.background = 'transparent';
+            card.style.backdropFilter = 'none';
+            card.style.webkitBackdropFilter = 'none';
+
+            captureBg.style.display = 'block';
+            captureMask.style.display = 'block';
+            html2canvas(card, {
+                scale: 3,
+                backgroundColor: null, 
+                useCORS: true
+            }).then(canvas => {
+                captureBg.style.display = 'none';
+               
+                 captureMask.style.display = 'none';
+                card.style.background = origBg;
+                card.style.backdropFilter = origFilter;
+                card.style.webkitBackdropFilter = origWebkitFilter;
+
+                // 呼出海报展示弹窗
+                const finalDataUrl = canvas.toDataURL("image/jpeg", 0.95);
+                const modal = document.getElementById('save-modal');
+                document.getElementById('final-image').src = finalDataUrl;
+                
+                modal.classList.remove('hidden');
+                void modal.offsetWidth; 
+                modal.classList.add('show');
+             }).catch(err => {
+                captureBg.style.display = 'none';
+                captureMask.style.display = 'none';
+                card.style.background = origBg;
+                card.style.backdropFilter = origFilter;
+                card.style.webkitBackdropFilter = origWebkitFilter;
+                alert('终端连接异常，请刷新重试');
+            });
+        }
+
+        // --- 弹窗关闭 ---
+        function closeModal() {
+            const modal = document.getElementById('save-modal');
+            modal.classList.remove('show');
+            setTimeout(() => { modal.classList.add('hidden'); }, 400);
+        }
+    </script>
+</body>
+</html>
